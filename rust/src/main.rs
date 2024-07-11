@@ -7,14 +7,12 @@ mod config;
 mod http_client;
 mod sheets;
 
-// TestApp: 1ZEf5IkCGyHEbR8hnvMKmjAd_-4DejRPs1de4iigUpF0
-
 #[tokio::main]
 async fn main() {
     let config = config::Config::new();
     let client = http_client::http_client();
     let auth = auth::auth(&config, client.clone()).await;
-    let mut hub = Sheets::new(client.clone(), auth);
+    let hub = Sheets::new(client.clone(), auth);
 
     let result = sheets::read(&hub, &config).await;
 
@@ -30,18 +28,21 @@ async fn main() {
                     .unwrap()
                     .into_iter()
                     .fold(totals, |mut acc, next_row| {
-                        let key: String = next_row[0].clone();
-                        let current_value: Option<&i32> = acc.get(&key);
-                        let next_value: i32 = next_row[1].parse::<i32>().unwrap();
-
-                        let new_value: i32 = match current_value {
-                            None => next_value + 0,
-                            Some(x) => next_value + x,
+                        let key: String = match next_row[0].as_str() {
+                            Some(s) => s.to_string(),
+                            None => String::new(),
                         };
+                        let next_value: i32 = match next_row[1].as_str() {
+                            Some(s) => s.parse::<i32>().unwrap(),
+                            None => 0,
+                        };
+
+                        let current_value = acc.get(&key).copied().unwrap_or(0);
+                        let new_value = current_value + next_value;
 
                         acc.insert(key, new_value);
 
-                        return acc;
+                        acc
                     })
             );
         }

@@ -10,8 +10,8 @@ impl Config {
         Config {
             priv_key: String::from("priv_key.json"),
             sheet_id: String::from("1pvmIGeanVd0mjIO4-y53OY-z-ueLIY1AF7e-KZGAMzI"),
-            deposit_range_input: String::from("Deposits Stream!A2:D"),
-            deposit_range_output: String::from("Deposits Stream!O1"),
+            deposit_range_input: String::from("rust_test!A2:D"),
+            deposit_range_output: String::from("rust_test!D1"),
         }
     }
 }
