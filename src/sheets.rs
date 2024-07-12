@@ -1,5 +1,4 @@
 use sheets4::{hyper, hyper_rustls, Error, Sheets};
-use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
@@ -20,12 +19,14 @@ impl SheetsClient {
         })
     }
 
-    pub async fn read_data(&self, sheet_id: &str, data_range: &str) -> Result<Vec<HashMap<String, String>>, Error> {
+    pub async fn read_data(&self, sheet_id: &str, data_range: &str) -> Result<Vec<Vec<(String, String)>>, Error> {
         let hub = self.hub.lock().await;
         let (_, spreadsheet) = hub.spreadsheets()
             .values_get(sheet_id, data_range)
             .doit()
             .await?;
+
+        println!("Spreadsheet values: {:?}", spreadsheet.values);
 
         let mut rows = Vec::new();
 
@@ -35,14 +36,17 @@ impl SheetsClient {
                     .map(|v| v.as_str().unwrap_or("").to_string())
                     .collect();
 
+                println!("Headers: {:?}", headers);
+
                 for row in values.iter().skip(1) {
-                    let mut row_map = HashMap::new();
+                    let mut row_vec = Vec::new();
                     for (i, cell) in row.iter().enumerate() {
                         let key = headers.get(i).cloned().unwrap_or_else(|| format!("Column{}", i + 1));
                         let value = cell.as_str().unwrap_or("").to_string();
-                        row_map.insert(key, value);
+                        row_vec.push((key, value));
                     }
-                    rows.push(row_map);
+                    println!("Row vec: {:?}", row_vec);
+                    rows.push(row_vec);
                 }
             }
         }

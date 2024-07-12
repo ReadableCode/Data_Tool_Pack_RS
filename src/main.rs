@@ -7,7 +7,7 @@ mod sheets;
 #[tokio::main]
 async fn main() {
     let sheet_id = "1pvmIGeanVd0mjIO4-y53OY-z-ueLIY1AF7e-KZGAMzI";
-    let data_range = "rust_test!A2:D";
+    let data_range = "rust_test!A1:D";
 
     let sheets_client = sheets::SheetsClient::new().await.unwrap();
 
