@@ -1,6 +1,5 @@
 use google_sheets4::oauth2::{self, authenticator::Authenticator, ServiceAccountKey};
 use google_sheets4::{hyper, hyper_rustls};
-use std::env;
 use serde_json;
 use std::fs;
 use std::path::Path;
@@ -25,22 +24,11 @@ fn load_env() -> HashMap<String, String> {
 pub async fn create_authenticator(
     client: hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>,
 ) -> Authenticator<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>> {
-    // dotenv().ok(); // Load environment variables from the .env file
-
-    // Manually load the .env file for complex variables
+    // Manually load the .env file for complex variable handling
     let env_vars = load_env();
 
     // Debug output to verify environment variable loading
-    if let Some(log_level) = env::var("LOG_LEVEL").ok().or_else(|| env_vars.get("LOG_LEVEL").cloned()) {
-        println!("Loaded LOG_LEVEL: {}", log_level);
-    } else {
-        println!("LOG_LEVEL not found in .env");
-    }
-
-    // Debug output to verify environment variable loading
     if let Some(google_service_account_string) = env_vars.get("GOOGLE_SERVICE_ACCOUNT") {
-        println!("Loaded GOOGLE_SERVICE_ACCOUNT: {}", google_service_account_string);
-
         // Deserialize the JSON string to ensure it is valid
         let secret: ServiceAccountKey = serde_json::from_str(&google_service_account_string)
             .expect("Invalid JSON in GOOGLE_SERVICE_ACCOUNT");
