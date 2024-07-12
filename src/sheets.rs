@@ -20,33 +20,33 @@ impl SheetsClient {
         })
     }
 
-    pub async fn read_data(&self, sheet_id: &str, data_range: &str) -> Result<HashMap<String, i32>, Error> {
+    pub async fn read_data(&self, sheet_id: &str, data_range: &str) -> Result<Vec<HashMap<String, String>>, Error> {
         let hub = self.hub.lock().await;
         let (_, spreadsheet) = hub.spreadsheets()
             .values_get(sheet_id, data_range)
             .doit()
             .await?;
 
-        let mut totals = HashMap::<String, i32>::new();
+        let mut rows = Vec::new();
 
         if let Some(values) = spreadsheet.values {
-            for next_row in values.into_iter() {
-                let key: String = next_row.get(0)
-                    .and_then(|v| v.as_str().map(|s| s.to_string()))
-                    .unwrap_or_else(|| "".to_string());
+            if !values.is_empty() {
+                let headers: Vec<String> = values[0].iter()
+                    .map(|v| v.as_str().unwrap_or("").to_string())
+                    .collect();
 
-                let next_value: i32 = next_row.get(1)
-                    .and_then(|v| v.as_str().map(|s| s.parse().ok()))
-                    .flatten()
-                    .unwrap_or(0);
-
-                let current_value = totals.get(&key).copied().unwrap_or(0);
-                let new_value = current_value + next_value;
-
-                totals.insert(key, new_value);
+                for row in values.iter().skip(1) {
+                    let mut row_map = HashMap::new();
+                    for (i, cell) in row.iter().enumerate() {
+                        let key = headers.get(i).cloned().unwrap_or_else(|| format!("Column{}", i + 1));
+                        let value = cell.as_str().unwrap_or("").to_string();
+                        row_map.insert(key, value);
+                    }
+                    rows.push(row_map);
+                }
             }
         }
 
-        Ok(totals)
+        Ok(rows)
     }
 }
