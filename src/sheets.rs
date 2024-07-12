@@ -19,7 +19,7 @@ impl SheetsClient {
         })
     }
 
-    pub async fn read_data(&self, sheet_id: &str, data_range: &str) -> Result<Vec<Vec<(String, String)>>, Error> {
+    pub async fn read_data(&self, sheet_id: &str, data_range: &str) -> Result<(Vec<String>, Vec<Vec<i32>>), Error> {
         let hub = self.hub.lock().await;
         let (_, spreadsheet) = hub.spreadsheets()
             .values_get(sheet_id, data_range)
@@ -29,28 +29,39 @@ impl SheetsClient {
         println!("Spreadsheet values: {:?}", spreadsheet.values);
 
         let mut rows = Vec::new();
+        let headers: Vec<String>;
 
         if let Some(values) = spreadsheet.values {
             if !values.is_empty() {
-                let headers: Vec<String> = values[0].iter()
+                headers = values[0].iter()
                     .map(|v| v.as_str().unwrap_or("").to_string())
                     .collect();
 
                 println!("Headers: {:?}", headers);
 
                 for row in values.iter().skip(1) {
-                    let mut row_vec = Vec::new();
-                    for (i, cell) in row.iter().enumerate() {
-                        let key = headers.get(i).cloned().unwrap_or_else(|| format!("Column{}", i + 1));
-                        let value = cell.as_str().unwrap_or("").to_string();
-                        row_vec.push((key, value));
-                    }
+                    let row_vec: Vec<i32> = row.iter()
+                        .map(|cell| cell.as_str().unwrap_or("0").parse::<i32>().unwrap_or(0))
+                        .collect();
+
                     println!("Row vec: {:?}", row_vec);
                     rows.push(row_vec);
                 }
-            }
-        }
 
-        Ok(rows)
+                Ok((headers, rows))
+            } else {
+                Ok((vec![], vec![]))
+            }
+        } else {
+            Ok((vec![], vec![]))
+        }
+    }
+
+    pub fn sum_row(row: &Vec<i32>) -> i32 {
+        row.iter().sum()
+    }
+
+    pub fn sum_column(data: &Vec<Vec<i32>>, col_index: usize) -> i32 {
+        data.iter().map(|row| row.get(col_index).copied().unwrap_or(0)).sum()
     }
 }
