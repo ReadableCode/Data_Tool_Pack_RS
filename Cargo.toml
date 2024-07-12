@@ -6,7 +6,7 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-google-sheets4 = "5.0.5+20240621"
+google-sheets4 = "5.0.5"
 hyper = "0.14"
 hyper-rustls = "0.25"
 serde = "1.0"
