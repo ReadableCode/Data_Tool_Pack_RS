@@ -9,7 +9,9 @@ async fn main() {
     let sheet_id = "1pvmIGeanVd0mjIO4-y53OY-z-ueLIY1AF7e-KZGAMzI";
     let data_range = "rust_test!A2:D";
 
-    let result = sheets::read_data(sheet_id, data_range).await;
+    let sheets_client = sheets::SheetsClient::new().await.unwrap();
+
+    let result = sheets_client.read_data(sheet_id, data_range).await;
 
     match result {
         Err(e) => println!("{}", e),
