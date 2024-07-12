@@ -1,6 +1,6 @@
 use sheets4::{hyper, hyper_rustls};
 
-pub fn http_client() -> hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>> {
+pub fn create_http_client() -> hyper::Client<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>> {
     let https_connector = hyper_rustls::HttpsConnectorBuilder::new()
         .with_native_roots()
         .expect("Failed to load native roots")

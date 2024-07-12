@@ -1,14 +1,12 @@
 use sheets4::{api::ValueRange, hyper, hyper_rustls, Error, Sheets};
 
-use crate::config::Config;
-
-pub async fn read(
+pub async fn read_data(
     hub: &Sheets<hyper_rustls::HttpsConnector<hyper::client::HttpConnector>>,
-    config: &Config,
+    sheet_id: &str,
+    data_range: &str,
 ) -> Result<(hyper::Response<hyper::Body>, ValueRange), Error> {
-    return hub
-        .spreadsheets()
-        .values_get(&config.sheet_id, &config.deposit_range_input)
+    hub.spreadsheets()
+        .values_get(sheet_id, data_range)
         .doit()
-        .await;
+        .await
 }
